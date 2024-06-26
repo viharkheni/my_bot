@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+	<xacro:include filename="inertial_macros.xacro"/>
+
+
+  <!-- Define colors -->
+  <material name="yellow">
+    <color rgba="1 0.8 0 1"/>
+  </material>
+  <material name="gray">
+    <color rgba="0.5 0.5 0.5 1"/>
+  </material>
+
+  <!-- Base link -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.8 0.5 0.2"/>
+      </geometry>
+      <material name="yellow"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.8 0.5 0.2"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Front wheels (connected by single motor) -->
+  <xacro:macro name="front_wheel" params="prefix y">
+    <link name="${prefix}_wheel">
+      <visual>
+        <geometry>
+          <cylinder radius="0.1" length="0.05"/>
+        </geometry>
+        <material name="gray"/>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="0.1" length="0.05"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${prefix}_wheel"/>
+      <origin xyz="0.3 ${y} -0.1" rpy="${pi/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:front_wheel prefix="front_right" y="-0.275"/>
+  <xacro:front_wheel prefix="front_left" y="0.275"/>
+
+  <!-- Rear wheels with independent steering -->
+  <xacro:macro name="rear_wheel_steering" params="prefix y">
+    <link name="${prefix}_steering_link">
+      <visual>
+        <geometry>
+          <cylinder radius="0.05" length="0.05"/>
+        </geometry>
+        <material name="gray"/>
+      </visual>
+    </link>
+    <joint name="${prefix}_steering_joint" type="revolute">
+      <parent link="base_link"/>
+      <child link="${prefix}_steering_link"/>
+      <origin xyz="-0.3 ${y} -0.1" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-0.5" upper="0.5" effort="1000" velocity="1.0"/>
+    </joint>
+    
+    <link name="${prefix}_wheel">
+      <visual>
+        <geometry>
+          <cylinder radius="0.1" length="0.05"/>
+        </geometry>
+        <material name="gray"/>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="0.1" length="0.05"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="${prefix}_steering_link"/>
+      <child link="${prefix}_wheel"/>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:rear_wheel_steering prefix="rear_right" y="-0.275"/>
+  <xacro:rear_wheel_steering prefix="rear_left" y="0.275"/>
+
+  <!-- Mast and Fork (unchanged) -->
+  <!-- ... (keep the mast and fork parts as they were in the previous version) ... -->
+
+  <!-- Mast -->
+  <link name="mast">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 1.0"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.1 0.1 1.0"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="mast_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="mast"/>
+    <origin xyz="0.35 0 0.6" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Fork -->
+  <link name="fork">
+    <visual>
+      <geometry>
+        <box size="0.5 0.3 0.05"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.5 0.3 0.05"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="fork_joint" type="prismatic">
+    <parent link="mast"/>
+    <child link="fork"/>
+    <origin xyz="0.3 0 -0.475" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0" upper="0.5" effort="1000" velocity="0.5"/>
+  </joint>
+
+</robot>
